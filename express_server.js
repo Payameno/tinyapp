@@ -7,6 +7,8 @@ const urlDatabase = {
   "l2ldwo1": "http://www.google.com"
 };
 
+app.set('view engine', 'ejs');
+
 app.get('/', (req, res) => {
   res.send("Hey there!");
 });
