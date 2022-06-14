@@ -21,6 +21,17 @@ app.get('/hello', (req, res) => {
   res.send("<html><body>Hello <b>world</b></body><html>\n")
 })
 
+app.get('/urls', (req, res) => {
+  const templateVars = { urls: urlDatabase };
+  res.render('urls_index', templateVars);
+})
+
+app.get('/urls/:shortURL', (req, res) => {
+  const shortURL = req.params.shortURL;
+  const templateVars = { shortURL: shortURL, longURL: urlDatabase[shortURL], };
+  res.render('urls_Show', templateVars);
+})
+
 app.listen(port, () => {
   console.log(`I'm listening to you on ${port}`)
 });
