@@ -11,24 +11,32 @@ app.set('view engine', 'ejs');
 app.use(bodyparser.urlencoded({extended : true}));
 
 app.get('/', (req, res) => {
-  res.send("Hey there!");
+  res.send("Home Page");
 });
 
 app.get('/urls.json', (req, res) => {
   res.json(urlDatabase);
 });
 
-app.get('/hello', (req, res) => {
-  res.send("<html><body>Hello <b>world</b></body><html>\n")
+app.get('/urls/new', (req, res) => {
+  res.render('urls_new');
+});
+
+app.get('/u/:shortURL', (req, res) => {
+  const shortURL = req.params.shortURL;
+  const longURL = urlDatabase[shortURL];
+  res.redirect(longURL);
+  });
+
+app.get('/urls/:shortURL', (req, res) => {
+  const shortURL = req.params.shortURL;
+  const templateVars = { shortURL: shortURL, longURL: urlDatabase[shortURL], };
+  res.render('urls_Show', templateVars);
 });
 
 app.get('/urls', (req, res) => {
   const templateVars = { urls: urlDatabase };
   res.render('urls_index', templateVars);
-});
-
-app.get('/urls/new', (req, res) => {
-  res.render('urls_new');
 });
 
 app.post('/urls', (req, res) => {
@@ -37,18 +45,6 @@ app.post('/urls', (req, res) => {
   const templateVars = { shortURL: shortURL, longURL: urlDatabase[shortURL], }
   res.render(`urls_Show`, templateVars);
 });
-
-app.get('/urls/:shortURL', (req, res) => {
-  const shortURL = req.params.shortURL;
-  const templateVars = { shortURL: shortURL, longURL: urlDatabase[shortURL], };
-  res.render('urls_Show', templateVars);
-});
-
-app.get('/u/:shortURL', (req, res) => {
-  const shortURL = req.params.shortURL;
-  const longURL = urlDatabase[shortURL];
-  res.redirect(longURL);
-  });
 
 app.listen(port, () => {
   console.log(`I'm listening to you on ${port}`)
