@@ -18,18 +18,7 @@ const urlDatabase = {
     userID: "user2RandomID",
   },
 };
-const users = {
-  user1RandomID: {
-    id: "user1RandomID",
-    email: "user1@example.com",
-    password: "pizzy",
-  },
-  user2RandomID: {
-    id: "user2RandomID",
-    email: "user2@example.com",
-    password: "easy",
-  },
-};
+const users = { };
 app.set("view engine", "ejs");
 app.use(cookieParser());
 app.use(bodyparser.urlencoded({ extended: true }));
@@ -80,10 +69,10 @@ app.get("/urls.json", (req, res) => {
 app.post("/register", (req, res) => {
   const email = req.body["email"];
   const userInputPassword = req.body["password"];
-  const password = bcrypt.hashSync(userInputPassword, 10);
-  if (email === "" || password === "" || getUserbyEmail(email)) {
-    res.sendCode(400);
+  if (email === "" || userInputPassword === "" || getUserbyEmail(email)) {
+    return res.sendStatus(400);
   }
+  const password = bcrypt.hashSync(userInputPassword, 10);
   const randID = generateRandomString();
   users[randID] = {
     id: randID,
@@ -116,6 +105,7 @@ app.post("/login", (req, res) => {
     const email = credentials.email;
     const password = credentials.password;  
     const user = getUserbyEmail(email);
+    console.log(users);
     if (bcrypt.compareSync(password, user.password)) {
       res.cookie("user_id", user.id);
       res.redirect("/urls");
