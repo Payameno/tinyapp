@@ -205,28 +205,17 @@ app.post("/urls", (req, res) => {
 });
 
 app.post("/urls/:shortURL/delete", (req, res) => {
-  if (!getUserByuserID(req.cookies["user_id"])) {
+  const user_id = req.cookies["user_id"];
+  const shortURL = req.params.shortURL;
+  const shortURLByUser = getShortURLbyuserID(user_id);
+  if (!getUserByuserID(user_id)) {
     res.sendStatus(403);
-  } else {
-    const user_id = req.cookies["user_id"];
-    const shortURL = req.params.shortURL;
-    for (let urls of urlDatabase) {
-
+  } 
+  if (shortURLByUser.includes(shortURL)) {
+      delete urlDatabase[shortURL];
+      return res.redirect("/urls");
     }
-  //   shortURL = getShortURLbyuserID(user_id);
-  // const templateVars = {
-  //   user_id: user_id,
-  //   shortURL,
-  //   urls: urlDatabase,
-  //   user: getUserByuserID(req.cookies["user_id"]),
-  // };
-  // res.render("urls_index", templateVars);
-
-
-
-
-  delete urlDatabase[req.params.shortURL];
-  res.redirect("/urls");
+    res.sendStatus(403);
 });
 
 app.post("/urls/:id", (req, res) => {
