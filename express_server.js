@@ -1,7 +1,8 @@
 const express = require("express");
-const app = express();
 const bodyparser = require("body-parser");
 const cookieParser = require("cookie-parser");
+const bcrypt = require('bcryptjs');
+const app = express();
 const port = 8080;
 const urlDatabase = {
   b3s2xk4: {
@@ -29,7 +30,6 @@ const users = {
     password: "easy",
   },
 };
-
 app.set("view engine", "ejs");
 app.use(cookieParser());
 app.use(bodyparser.urlencoded({ extended: true }));
@@ -50,7 +50,6 @@ const getUserbyEmail = function (email) {
 const getShortURLbyuserID = function (id) {
   let shortURLS = [];
   const keys = Object.keys(urlDatabase);
-  console.log(keys);
   keys.forEach( key => {
     if (urlDatabase[key].userID === id) {
       shortURLS.push(key);
@@ -80,8 +79,8 @@ app.get("/urls.json", (req, res) => {
 //Registeration data capture
 app.post("/register", (req, res) => {
   const email = req.body["email"];
-  const password = req.body["password"];
-
+  const userInputPassword = req.body["password"];
+  const password = bcrypt.hashSync(userInputPassword, 10);
   if (email === "" || password === "" || getUserbyEmail(email)) {
     res.sendCode(400);
   }
@@ -115,9 +114,9 @@ app.post("/login", (req, res) => {
     res.sendStatus(403);
   } else {
     const email = credentials.email;
-    const password = credentials.password;
+    const password = credentials.password;  
     const user = getUserbyEmail(email);
-    if (user.password === password) {
+    if (bcrypt.compareSync(password, user.password)) {
       res.cookie("user_id", user.id);
       res.redirect("/urls");
     } else {
@@ -146,7 +145,6 @@ app.get("/u/:id", (req, res) => {
   const shortURL = req.params.id;
   const urlDatabaseObject = urlDatabase[shortURL];
   const longURL = urlDatabaseObject.longURL;
-  console.log(longURL);
   res.redirect(longURL);
 });
 
@@ -160,7 +158,6 @@ app.get("/urls/:id", (req, res) => {
     res.sendStatus(404);
   } else {
   const urlDatabaseObject = urlDatabase[shortURL];
-  console.log(urlDatabaseObject);
   const templateVars = {
     shortURL: shortURL,
     longURL: urlDatabaseObject.longURL,
@@ -175,7 +172,6 @@ app.get("/urls", (req, res) => {
     res.redirect('login');
   } else {
     const user_id = req.cookies["user_id"];
-    console.log(user_id);
     shortURL = getShortURLbyuserID(user_id);
   const templateVars = {
     user_id: user_id,
@@ -200,7 +196,6 @@ app.post("/urls", (req, res) => {
     longURL: longURL,
     user: getUserByuserID(req.cookies["user_id"]),
   };
-  console.log(urlDatabase);
   res.render("urls_Show", templateVars);
 });
 
