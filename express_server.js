@@ -47,14 +47,27 @@ const getUserbyEmail = function (email) {
   }
 };
 
-const getShortURLbyuserID = function (user_id) {
+const getShortURLbyuserID = function (id) {
+  let shortURLS = [];
   const keys = Object.keys(urlDatabase);
-  keys.forEach(key => {
-    if (key === user_id) {
-      return shortURL = key;
+  console.log(keys);
+  keys.forEach( key => {
+    if (urlDatabase[key].userID === user_id) {
+      shortURLS.push(key);
     }
   });
+  return shortURLS;
 };
+
+  const urlsForUser = function (id) { //finds a user's links {shortkey: longurl}
+    let userurls = {};
+    for (let key in urlDatabase) {
+      if (urlDatabase[key].userID === user_id) {
+        let longURL = urlDatabase[key].longURL;
+        userurls[key] = longURL;
+    }}
+      return userurls;
+    };
 
 app.get("/", (req, res) => {
   res.send("Home Page");
@@ -192,6 +205,26 @@ app.post("/urls", (req, res) => {
 });
 
 app.post("/urls/:shortURL/delete", (req, res) => {
+  if (!getUserByuserID(req.cookies["user_id"])) {
+    res.sendStatus(403);
+  } else {
+    const user_id = req.cookies["user_id"];
+    const shortURL = req.params.shortURL;
+    for (let urls of urlDatabase) {
+
+    }
+  //   shortURL = getShortURLbyuserID(user_id);
+  // const templateVars = {
+  //   user_id: user_id,
+  //   shortURL,
+  //   urls: urlDatabase,
+  //   user: getUserByuserID(req.cookies["user_id"]),
+  // };
+  // res.render("urls_index", templateVars);
+
+
+
+
   delete urlDatabase[req.params.shortURL];
   res.redirect("/urls");
 });
