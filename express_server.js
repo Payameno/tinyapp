@@ -52,7 +52,7 @@ const getShortURLbyuserID = function (id) {
   const keys = Object.keys(urlDatabase);
   console.log(keys);
   keys.forEach( key => {
-    if (urlDatabase[key].userID === user_id) {
+    if (urlDatabase[key].userID === id) {
       shortURLS.push(key);
     }
   });
