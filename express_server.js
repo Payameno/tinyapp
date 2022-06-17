@@ -2,6 +2,7 @@ const express = require("express");
 const bodyparser = require("body-parser");
 const cookieSession = require("cookie-session");
 const bcrypt = require("bcryptjs");
+const functionBase = require('./helpers');
 const app = express();
 const port = 8080;
 const users = {};
@@ -73,7 +74,7 @@ app.post("/register", (req, res) => {
   if (
     email === "" ||
     userInputPassword === "" ||
-    getUserbyEmail(email, users)
+    functionBase(email, users)
   ) {
     return res.sendStatus(400);
   }
@@ -102,12 +103,12 @@ app.get("/login", (req, res) => {
 });
 app.post("/login", (req, res) => {
   const credentials = req.body;
-  if (!getUserbyEmail(credentials.email, users)) {
+  if (!functionBase(credentials.email, users)) {
     res.sendStatus(403);
   } else {
     const email = credentials.email;
     const password = credentials.password;
-    const user = getUserbyEmail(email, users);
+    const user = functionBase(email, users);
     if (bcrypt.compareSync(password, user.password)) {
       req.session.user_id = user.id;
       res.redirect("/urls");
@@ -181,7 +182,7 @@ app.post("/urls/:id", (req, res) => {
 app.listen(port, () => {
   console.log(`I'm listening to you on ${port}`);
 });
-//Functions//
+
 function generateRandomString() {
   const randNum = Math.random() + 1;
   return randNum.toString(36).substring(5);
@@ -200,13 +201,6 @@ const getUserIDbyShortURL = function (shortURL, database) {
 const getUserByuserID = function (user_id) {
   const user = users[user_id];
   return user;
-};
-
-const getUserbyEmail = function (email, database) {
-  for (let key in database) {
-    let user = database[key];
-    if (user.email === email) return user;
-  }
 };
 
 const getShortURLbyuserID = function (id, database) {
