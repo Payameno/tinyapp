@@ -2,7 +2,7 @@ const express = require("express");
 const bodyparser = require("body-parser");
 const cookieSession = require("cookie-session");
 const bcrypt = require("bcryptjs");
-const functionBase = require('./helpers');
+const { getUserbyEmail } = require('./helpers');
 const app = express();
 const port = 8080;
 const users = {};
@@ -74,7 +74,7 @@ app.post("/register", (req, res) => {
   if (
     email === "" ||
     userInputPassword === "" ||
-    functionBase(email, users)
+    getUserbyEmail(email, users)
   ) {
     return res.sendStatus(400);
   }
@@ -103,12 +103,12 @@ app.get("/login", (req, res) => {
 });
 app.post("/login", (req, res) => {
   const credentials = req.body;
-  if (!functionBase(credentials.email, users)) {
+  if (!getUserbyEmail(credentials.email, users)) {
     res.sendStatus(403);
   } else {
     const email = credentials.email;
     const password = credentials.password;
-    const user = functionBase(email, users);
+    const user = getUserbyEmail(email, users);
     if (bcrypt.compareSync(password, user.password)) {
       req.session.user_id = user.id;
       res.redirect("/urls");
