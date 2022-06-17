@@ -31,7 +31,11 @@ app.use(
 );
 
 app.get("/", (req, res) => {
-  res.send("Home Page");
+  const user_id = req.session.user_id;
+  if (!user_id) {
+    res.redirect('/login');
+  }
+  res.redirect('/urls');
 });
 app.get("/urls.json", (req, res) => {
   res.json(urlDatabase);
@@ -49,8 +53,8 @@ app.post("/urls", (req, res) => {
     longURL,
   };
   const templateVars = {
-    shortURL: shortURL,
-    longURL: longURL,
+    shortURL,
+    longURL,
     user,
   };
   res.render("urls_Show", templateVars);
@@ -59,7 +63,7 @@ app.post("/urls", (req, res) => {
 app.get("/urls", (req, res) => {
   const user_id = req.session.user_id;
   if (!user_id) {
-    res.redirect("login");
+    res.sendStatus(403);
   } else {
     const shortURL = getUserIDbyShortURL(user_id, urlDatabase);
     const user = getUserByuserID(user_id);
@@ -80,7 +84,7 @@ app.post("/register", (req, res) => {
     userInputPassword === "" ||
     getUserbyEmail(email, users)
   ) {
-    return res.sendStatus(400);
+    return res.sendStatus(406);
   }
   const password = bcrypt.hashSync(userInputPassword, 10);
   const randID = generateRandomString();
@@ -93,16 +97,18 @@ app.post("/register", (req, res) => {
   res.redirect("/urls");
 });
 app.get("/register", (req, res) => {
-  const user_id = req.session.user_id;
-  const templateVars = {
-    user: getUserByuserID(user_id),
-  };
-  res.render("register", templateVars);
+    const user_id = req.session.user_id;
+    if (!user_id) {
+      const templateVars = {
+        user: getUserByuserID(user_id),
+      };
+      res.render("register", templateVars);
+    }
+    res.redirect('/urls');
 });
-
 app.get("/login", (req, res) => {
   const user_id = req.session.user_id;
-  if (!user_id) {
+  if (!getUserByuserID(user_id)) {
     const templateVars = { user: getUserByuserID(user_id) };
     res.render("login", templateVars);
   }
@@ -126,7 +132,7 @@ app.post("/login", (req, res) => {
 });
 app.post("/logout", (req, res) => {
   res.clearCookie("session");
-  res.redirect("/urls");
+  res.redirect("/"); //Dear Mentor: Assigment has set Get/URLS for non-users as "Error", while also requires logout to redirect to /URLS, which means receiving error after loging out, that is why i have set this as home directory
 });
 app.get("/urls/new", (req, res) => {
   const user_id = req.session.user_id;
