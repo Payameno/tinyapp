@@ -132,7 +132,7 @@ app.post("/login", (req, res) => {
 });
 app.post("/logout", (req, res) => {
   res.clearCookie("session");
-  res.redirect("/"); //Dear Mentor: Assigment has set Get/URLS for non-users as "Error", while also requires logout to redirect to /URLS, which means receiving error after loging out, that is why i have set this as home directory
+  res.redirect("/");
 });
 app.get("/urls/new", (req, res) => {
   const user_id = req.session.user_id;
