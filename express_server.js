@@ -90,8 +90,8 @@ app.post("/register", (req, res) => {
   const randID = generateRandomString();
   users[randID] = {
     id: randID,
-    email: email,
-    password: password,
+    email,
+    password,
   };
   req.session.user_id = randID;
   res.redirect("/urls");
