@@ -37,9 +37,12 @@ app.get("/urls.json", (req, res) => {
   res.json(urlDatabase);
 });
 app.post("/urls", (req, res) => {
+  const user_id = req.session.user_id;
+  if (!user_id) {
+    res.sendStatus(401);
+  } else {
   const longURL = req.body.longURL;
   const shortURL = generateRandomString();
-  const user_id = req.session.user_id;
   const user = getUserByuserID(user_id);
   urlDatabase[shortURL] = {
     userID: user_id,
@@ -51,6 +54,7 @@ app.post("/urls", (req, res) => {
     user,
   };
   res.render("urls_Show", templateVars);
+}
 });
 app.get("/urls", (req, res) => {
   const user_id = req.session.user_id;
@@ -98,8 +102,11 @@ app.get("/register", (req, res) => {
 
 app.get("/login", (req, res) => {
   const user_id = req.session.user_id;
-  const templateVars = { user: getUserByuserID(user_id) };
-  res.render("login", templateVars);
+  if (!user_id) {
+    const templateVars = { user: getUserByuserID(user_id) };
+    res.render("login", templateVars);
+  }
+  res.redirect("/urls");
 });
 app.post("/login", (req, res) => {
   const credentials = req.body;
@@ -133,7 +140,14 @@ app.get("/urls/new", (req, res) => {
   }
 });
 app.get("/u/:id", (req, res) => {
+  const user_id = req.session.user_id;
   const shortURL = req.params.id;
+  if (!user_id  || urlDatabase[shortURL].userID !== user_id) {
+    res.sendStatus(401);
+  } else {
+    if (!urlDatabase[shortURL]) {
+      res.sendStatus(404);
+    }}
   const urlObject = urlDatabase[shortURL];
   const longURL = urlObject.longURL;
   res.redirect(longURL);
@@ -141,12 +155,12 @@ app.get("/u/:id", (req, res) => {
 app.get("/urls/:id", (req, res) => {
   const user_id = req.session.user_id;
   if (!user_id) {
-    res.redirect("/login");
+    res.sendStatus(401);
   } else {
     const user = getUserByuserID(user_id);
     const shortURL = req.params.id;
-    if (!urlDatabase[shortURL]) {
-      res.sendStatus(404);
+    if (!urlDatabase[shortURL] || urlDatabase[shortURL].userID !== user_id) {
+      res.sendStatus(401);
     } else {
       const urlObject = urlDatabase[shortURL];
       const templateVars = {
@@ -172,8 +186,15 @@ app.post("/urls/:shortURL/delete", (req, res) => {
   res.sendStatus(403);
 });
 app.post("/urls/:id", (req, res) => {
-  const longURL = req.body.longURL;
+  const user_id = req.session.user_id;
   const shortURL = req.params.id;
+  const shortURLByUser = getShortURLbyuserID(user_id, urlDatabase);
+  if (!user_id) {
+    res.sendStatus(403);
+  } else if (!shortURLByUser.includes(shortURL)) {
+    res.sendStatus(403);
+  }
+  const longURL = req.body.longURL;
   const urlObject = urlDatabase[shortURL];
   urlObject.longURL = longURL;
   res.redirect("/urls");
