@@ -2,7 +2,7 @@ const express = require("express");
 const bodyparser = require("body-parser");
 const cookieSession = require("cookie-session");
 const bcrypt = require("bcryptjs");
-const { getUserbyEmail } = require('./helpers');
+const { getUserbyEmail } = require("./helpers");
 const app = express();
 const port = 8080;
 const users = {};
@@ -33,9 +33,9 @@ app.use(
 app.get("/", (req, res) => {
   const user_id = req.session.user_id;
   if (!user_id) {
-    res.redirect('/login');
+    res.redirect("/login");
   }
-  res.redirect('/urls');
+  res.redirect("/urls");
 });
 app.get("/urls.json", (req, res) => {
   res.json(urlDatabase);
@@ -45,20 +45,20 @@ app.post("/urls", (req, res) => {
   if (!user_id) {
     res.sendStatus(401);
   } else {
-  const longURL = req.body.longURL;
-  const shortURL = generateRandomString();
-  const user = getUserByuserID(user_id);
-  urlDatabase[shortURL] = {
-    userID: user_id,
-    longURL,
-  };
-  const templateVars = {
-    shortURL,
-    longURL,
-    user,
-  };
-  res.render("urls_Show", templateVars);
-}
+    const longURL = req.body.longURL;
+    const shortURL = generateRandomString();
+    const user = getUserByuserID(user_id);
+    urlDatabase[shortURL] = {
+      userID: user_id,
+      longURL,
+    };
+    const templateVars = {
+      shortURL,
+      longURL,
+      user,
+    };
+    res.render("urls_Show", templateVars);
+  }
 });
 app.get("/urls", (req, res) => {
   const user_id = req.session.user_id;
@@ -97,14 +97,14 @@ app.post("/register", (req, res) => {
   res.redirect("/urls");
 });
 app.get("/register", (req, res) => {
-    const user_id = req.session.user_id;
-    if (!user_id) {
-      const templateVars = {
-        user: getUserByuserID(user_id),
-      };
-      res.render("register", templateVars);
-    }
-    res.redirect('/urls');
+  const user_id = req.session.user_id;
+  if (!user_id) {
+    const templateVars = {
+      user: getUserByuserID(user_id),
+    };
+    res.render("register", templateVars);
+  }
+  res.redirect("/urls");
 });
 app.get("/login", (req, res) => {
   const user_id = req.session.user_id;
@@ -148,12 +148,13 @@ app.get("/urls/new", (req, res) => {
 app.get("/u/:id", (req, res) => {
   const user_id = req.session.user_id;
   const shortURL = req.params.id;
-  if (!user_id  || urlDatabase[shortURL].userID !== user_id) {
+  if (!user_id || urlDatabase[shortURL].userID !== user_id) {
     res.sendStatus(401);
   } else {
     if (!urlDatabase[shortURL]) {
       res.sendStatus(404);
-    }}
+    }
+  }
   const urlObject = urlDatabase[shortURL];
   const longURL = urlObject.longURL;
   res.redirect(longURL);
