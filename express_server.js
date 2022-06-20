@@ -2,22 +2,22 @@ const express = require("express");
 const bodyparser = require("body-parser");
 const cookieSession = require("cookie-session");
 const bcrypt = require("bcryptjs");
-const { getUserbyEmail } = require("./helpers");
+const { getUserByUserId, getUserbyEmail, generateRandomString, getShortUrlByUserId } = require("./helpers");
 const app = express();
 const port = 8080;
 const users = {};
 const urlDatabase = {
   b3s2xk4: {
-    longURL: "http://www.facebook.com",
-    userID: "user1RandomID",
+    longUrl: "http://www.facebook.com",
+    userId: "user1RandomId",
   },
   l2ldwo1: {
-    longURL: "http://www.google.com",
-    userID: "user2RandomID",
+    longUrl: "http://www.google.com",
+    userId: "user2RandomId",
   },
   sd2d6j0: {
-    longURL: "http://www.yahoo.com",
-    userID: "user2RandomID",
+    longUrl: "http://www.yahoo.com",
+    userId: "user2RandomId",
   },
 };
 app.set("view engine", "ejs");
@@ -45,16 +45,16 @@ app.post("/urls", (req, res) => {
   if (!user_id) {
     res.sendStatus(401);
   } else {
-    const longURL = req.body.longURL;
-    const shortURL = generateRandomString();
-    const user = getUserByuserID(user_id);
-    urlDatabase[shortURL] = {
-      userID: user_id,
-      longURL,
+    const longUrl = req.body.longUrl;
+    const shortUrl = generateRandomString();
+    const user = getUserByUserId(user_id, users);
+    urlDatabase[shortUrl] = {
+      userId: user_id,
+      longUrl,
     };
     const templateVars = {
-      shortURL,
-      longURL,
+      shortUrl,
+      longUrl,
       user,
     };
     res.render("urls_Show", templateVars);
@@ -65,12 +65,12 @@ app.get("/urls", (req, res) => {
   if (!user_id) {
     res.sendStatus(403);
   } else {
-    const shortURL = getUserIDbyShortURL(user_id, urlDatabase);
-    const user = getUserByuserID(user_id);
+    const shortUrl = getShortUrlByUserId(user_id, urlDatabase);
+    const user = getUserByUserId(user_id, users);
     const templateVars = {
       urls: urlDatabase,
       user_id,
-      shortURL,
+      shortUrl,
       user,
     };
     res.render("urls_index", templateVars);
@@ -87,20 +87,20 @@ app.post("/register", (req, res) => {
     return res.sendStatus(406);
   }
   const password = bcrypt.hashSync(userInputPassword, 10);
-  const randID = generateRandomString();
-  users[randID] = {
-    id: randID,
+  const randId = generateRandomString();
+  users[randId] = {
+    id: randId,
     email,
     password,
   };
-  req.session.user_id = randID;
+  req.session.user_id = randId;
   res.redirect("/urls");
 });
 app.get("/register", (req, res) => {
   const user_id = req.session.user_id;
   if (!user_id) {
     const templateVars = {
-      user: getUserByuserID(user_id),
+      user: getUserByUserId(user_id, users),
     };
     res.render("register", templateVars);
   }
@@ -108,8 +108,8 @@ app.get("/register", (req, res) => {
 });
 app.get("/login", (req, res) => {
   const user_id = req.session.user_id;
-  if (!getUserByuserID(user_id)) {
-    const templateVars = { user: getUserByuserID(user_id) };
+  if (!getUserByUserId(user_id, users)) {
+    const templateVars = { user: getUserByUserId(user_id, users) };
     res.render("login", templateVars);
   }
   res.redirect("/urls");
@@ -140,104 +140,73 @@ app.get("/urls/new", (req, res) => {
     res.redirect("/login");
   } else {
     const templateVars = {
-      user: getUserByuserID(user_id),
+      user: getUserByUserId(user_id, users),
     };
     res.render("urls_new", templateVars);
   }
 });
 app.get("/u/:id", (req, res) => {
   const user_id = req.session.user_id;
-  const shortURL = req.params.id;
-  if (!user_id || urlDatabase[shortURL].userID !== user_id) {
+  const shortUrl = req.params.id;
+  if (!user_id || urlDatabase[shortUrl].userId !== user_id) {
     res.sendStatus(401);
   } else {
-    if (!urlDatabase[shortURL]) {
+    if (!urlDatabase[shortUrl]) {
       res.sendStatus(404);
     }
   }
-  const urlObject = urlDatabase[shortURL];
-  const longURL = urlObject.longURL;
-  res.redirect(longURL);
+  const urlObject = urlDatabase[shortUrl];
+  const longUrl = urlObject.longUrl;
+  res.redirect(longUrl);
 });
 app.get("/urls/:id", (req, res) => {
   const user_id = req.session.user_id;
   if (!user_id) {
     res.sendStatus(401);
   } else {
-    const user = getUserByuserID(user_id);
-    const shortURL = req.params.id;
-    if (!urlDatabase[shortURL] || urlDatabase[shortURL].userID !== user_id) {
+    const user = getUserByUserId(user_id, users);
+    const shortUrl = req.params.id;
+    if (!urlDatabase[shortUrl] || urlDatabase[shortUrl].userId !== user_id) {
       res.sendStatus(401);
     } else {
-      const urlObject = urlDatabase[shortURL];
+      const urlObject = urlDatabase[shortUrl];
       const templateVars = {
-        shortURL: shortURL,
-        longURL: urlObject.longURL,
+        shortUrl: shortUrl,
+        longUrl: urlObject.longUrl,
         user,
       };
       res.render("urls_Show", templateVars);
     }
   }
 });
-app.post("/urls/:shortURL/delete", (req, res) => {
+app.post("/urls/:shortUrl/delete", (req, res) => {
   const user_id = req.session.user_id;
-  const shortURL = req.params.shortURL;
-  const shortURLByUser = getShortURLbyuserID(user_id, urlDatabase);
+  const shortUrl = req.params.shortUrl;
+  const ShortUrlByUser = getShortUrlByUserId(user_id, urlDatabase);
   if (!user_id) {
     res.sendStatus(403);
   }
-  if (shortURLByUser.includes(shortURL)) {
-    delete urlDatabase[shortURL];
+  if (ShortUrlByUser.includes(shortUrl)) {
+    delete urlDatabase[shortUrl];
     return res.redirect("/urls");
   }
   res.sendStatus(403);
 });
 app.post("/urls/:id", (req, res) => {
   const user_id = req.session.user_id;
-  const shortURL = req.params.id;
-  const shortURLByUser = getShortURLbyuserID(user_id, urlDatabase);
+  const shortUrl = req.params.id;
+  const ShortUrlByUser = getShortUrlByUserId(user_id, urlDatabase);
   if (!user_id) {
     res.sendStatus(403);
-  } else if (!shortURLByUser.includes(shortURL)) {
+  } else if (!ShortUrlByUser.includes(shortUrl)) {
     res.sendStatus(403);
   }
-  const longURL = req.body.longURL;
-  const urlObject = urlDatabase[shortURL];
-  urlObject.longURL = longURL;
+  const longUrl = req.body.longUrl;
+  const urlObject = urlDatabase[shortUrl];
+  urlObject.longUrl = longUrl;
   res.redirect("/urls");
 });
 
 app.listen(port, () => {
   console.log(`I'm listening to you on ${port}`);
 });
-
-function generateRandomString() {
-  const randNum = Math.random() + 1;
-  return randNum.toString(36).substring(5);
-}
-
-const getUserIDbyShortURL = function (shortURL, database) {
-  let userID;
-  for (let key in database) {
-    if (key === shortURL) {
-      userID = database[key].userID;
-    }
-  }
-  return userID;
-};
-
-const getUserByuserID = function (user_id) {
-  const user = users[user_id];
-  return user;
-};
-
-const getShortURLbyuserID = function (id, database) {
-  let shortURLS = [];
-  const keys = Object.keys(database);
-  keys.forEach((key) => {
-    if (database[key].userID === id) {
-      shortURLS.push(key);
-    }
-  });
-  return shortURLS;
-};

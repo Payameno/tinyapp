@@ -23,10 +23,10 @@
       </thead>
       <tbody>
         <% for(let key in urls) { %>
-        <% if (urls[key].userID === user_id) { %>
+        <% if (urls[key].userId === user_id) { %>
           <tr>
             <td><%= [key] %></td>
-            <td><%= urls[key].longURL %></td>
+            <td><%= urls[key].longUrl %></td>
             <td><form method="GET" action="/urls/<%= [key] %>">
               <button type="submit" class="btn btn-primary">Edit</button>
             </form></td>
