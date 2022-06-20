@@ -37,9 +37,6 @@ app.get("/", (req, res) => {
   }
   res.redirect("/urls");
 });
-app.get("/urls.json", (req, res) => {
-  res.json(urlDatabase);
-});
 app.post("/urls", (req, res) => {
   const user_id = req.session.user_id;
   if (!user_id) {
@@ -63,7 +60,7 @@ app.post("/urls", (req, res) => {
 app.get("/urls", (req, res) => {
   const user_id = req.session.user_id;
   if (!user_id) {
-    res.sendStatus(403);
+    res.sendStatus(401);
   } else {
     const shortUrl = getShortUrlByUserId(user_id, urlDatabase);
     const user = getUserByUserId(user_id, users);
@@ -117,7 +114,7 @@ app.get("/login", (req, res) => {
 app.post("/login", (req, res) => {
   const credentials = req.body;
   if (!getUserbyEmail(credentials.email, users)) {
-    res.sendStatus(403);
+    res.sendStatus(401);
   } else {
     const email = credentials.email;
     const password = credentials.password;
@@ -126,7 +123,7 @@ app.post("/login", (req, res) => {
       req.session.user_id = user.id;
       res.redirect("/urls");
     } else {
-      res.sendStatus(403);
+      res.sendStatus(401);
     }
   }
 });
@@ -146,15 +143,10 @@ app.get("/urls/new", (req, res) => {
   }
 });
 app.get("/u/:id", (req, res) => {
-  const user_id = req.session.user_id;
   const shortUrl = req.params.id;
-  if (!user_id || urlDatabase[shortUrl].userId !== user_id) {
-    res.sendStatus(401);
-  } else {
     if (!urlDatabase[shortUrl]) {
       res.sendStatus(404);
     }
-  }
   const urlObject = urlDatabase[shortUrl];
   const longUrl = urlObject.longUrl;
   res.redirect(longUrl);
