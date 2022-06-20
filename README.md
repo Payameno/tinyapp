@@ -4,7 +4,6 @@ TinyApp is a full stack web application built with Node and Express that allows 
 
 ## Final Product
 
-!["screenshot description"](#)
 !["screenshot of URLS page"](https://raw.githubusercontent.com/Payameno/tinyapp/master/docs/front_page_Prelogin.png)
 !["screenshot of URLS page"](https://raw.githubusercontent.com/Payameno/tinyapp/master/docs/User_Registeration_Page.png)
 !["screenshot of URLS page"](https://raw.githubusercontent.com/Payameno/tinyapp/master/docs/Front_Page_Dashboard.png)
